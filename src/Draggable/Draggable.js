@@ -5,6 +5,7 @@ import {Accessibility, Mirror} from './Plugins';
 import {
   MouseSensor,
   TouchSensor,
+  KeyboardSensor,
 } from './Sensors';
 
 import {
@@ -35,6 +36,11 @@ const onDragMove = Symbol('onDragMove');
 const onDragStop = Symbol('onDragStop');
 const onDragPressure = Symbol('onDragPressure');
 const getAppendableContainer = Symbol('getAppendableContainer');
+
+const defaultAnnouncements = {
+  'drag:start': 'Picked up draggable',
+  'drag:stop': 'Dropped draggable',
+};
 
 const defaults = {
   draggable: '.draggable-source',
@@ -118,7 +124,7 @@ export default class Draggable {
     document.addEventListener('drag:pressure', this[onDragPressure], true);
 
     this.addPlugin(...[Mirror, Accessibility, ...this.options.plugins]);
-    this.addSensor(...[MouseSensor, TouchSensor, ...this.options.sensors]);
+    this.addSensor(...[MouseSensor, TouchSensor, KeyboardSensor, ...this.options.sensors]);
 
     const draggableInitializedEvent = new DraggableInitializedEvent({
       draggable: this,
@@ -321,7 +327,7 @@ export default class Draggable {
 
     this.source = this.originalSource.cloneNode(true);
 
-    if (!isDragEvent(originalEvent)) {
+    if (!isDragEvent(originalEvent) && !isKeyboardEvent(originalEvent)) {
       const appendableContainer = this[getAppendableContainer]({source: this.originalSource});
       this.mirror = this.source.cloneNode(true);
 
@@ -633,6 +639,10 @@ function getSensorEvent(event) {
 
 function isDragEvent(event) {
   return /^drag/.test(event.type);
+}
+
+function isKeyboardEvent(event) {
+  return /^key/.test(event.type);
 }
 
 function applyUserSelect(element, value) {
