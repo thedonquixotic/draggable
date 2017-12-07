@@ -1,6 +1,6 @@
 import {closest} from 'shared/utils';
 
-import {Accessibility, Mirror, Announcement} from './Plugins';
+import {Focusable, Mirror, Announcement} from './Plugins';
 
 import {
   MouseSensor,
@@ -118,7 +118,7 @@ export default class Draggable {
     document.addEventListener('drag:stop', this[onDragStop], true);
     document.addEventListener('drag:pressure', this[onDragPressure], true);
 
-    this.addPlugin(...[Mirror, Accessibility, Announcement, ...this.options.plugins]);
+    this.addPlugin(...[Mirror, Focusable, Announcement, ...this.options.plugins]);
     this.addSensor(...[MouseSensor, TouchSensor, ...this.options.sensors]);
 
     const draggableInitializedEvent = new DraggableInitializedEvent({

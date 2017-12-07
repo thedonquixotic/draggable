@@ -78,7 +78,7 @@ You can find the documentation for each module within their respective directori
   - [DraggableEvent](src/Draggable/DraggableEvent)
   - [MirrorEvent](src/Draggable/MirrorEvent)
   - [Plugins](src/Draggable/Plugins)
-    - [Accessibility](src/Draggable/Plugins/Accessibility)
+    - [Focusable](src/Draggable/Plugins/Focusable)
     - [Mirror](src/Draggable/Plugins/Mirror)
   - [Sensors](src/Draggable/Sensors)
     - [DragSensor](src/Draggable/Sensors/DragSensor)

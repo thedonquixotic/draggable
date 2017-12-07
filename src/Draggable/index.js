@@ -1,5 +1,5 @@
 import Draggable from './Draggable';
-import {Accessibility, Mirror} from './Plugins';
+import {Focusable, Mirror} from './Plugins';
 
-export {Accessibility, Mirror};
+export {Focusable, Mirror};
 export default Draggable;

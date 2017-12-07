@@ -9,5 +9,5 @@ export {
 } from './Mirror';
 
 export {
-  default as Accessibility,
-} from './Accessibility';
+  default as Focusable,
+} from './Focusable';
