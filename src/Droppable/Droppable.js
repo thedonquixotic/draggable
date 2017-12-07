@@ -14,7 +14,7 @@ const release = Symbol('release');
 const closestDroppable = Symbol('closestDroppable');
 const getDroppables = Symbol('getDroppables');
 
-const classes = {
+const defaultClasses = {
   'droppable:active': 'draggable-droppable--active',
   'droppable:occupied': 'draggable-droppable--occupied',
 };
@@ -92,7 +92,7 @@ export default class Droppable extends Draggable {
    * @return {String|null}
    */
   getClassNameFor(name) {
-    return super.getClassNameFor(name) || classes[name];
+    return super.getClassNameFor(name) || defaultClasses[name];
   }
 
   /**

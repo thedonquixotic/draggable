@@ -1,8 +1,13 @@
-import Mirror, {defaultMirrorOption} from './Mirror';
-import Accessibility from './Accessibility';
+export {
+  default as Announcement,
+  defaultOptions as defaultAnnouncementOptions,
+} from './Announcement';
 
 export {
-  Mirror,
-  defaultMirrorOption,
-  Accessibility,
-};
+  default as Mirror,
+  defaultOptions as defaultMirrorOptions,
+} from './Mirror';
+
+export {
+  default as Accessibility,
+} from './Accessibility';

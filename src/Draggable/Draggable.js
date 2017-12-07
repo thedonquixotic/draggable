@@ -1,6 +1,6 @@
 import {closest} from 'shared/utils';
 
-import {Accessibility, Mirror} from './Plugins';
+import {Accessibility, Mirror, Announcement} from './Plugins';
 
 import {
   MouseSensor,
@@ -36,6 +36,17 @@ const onDragStop = Symbol('onDragStop');
 const onDragPressure = Symbol('onDragPressure');
 const getAppendableContainer = Symbol('getAppendableContainer');
 
+const defaultClasses = {
+  'container:dragging': 'draggable-container--is-dragging',
+  'source:dragging': 'draggable-source--is-dragging',
+  'source:placed': 'draggable-source--placed',
+  'container:placed': 'draggable-container--placed',
+  'body:dragging': 'draggable--is-dragging',
+  'draggable:over': 'draggable--over',
+  'container:over': 'draggable-container--over',
+  mirror: 'draggable-mirror',
+};
+
 const defaults = {
   draggable: '.draggable-source',
   handle: null,
@@ -43,16 +54,6 @@ const defaults = {
   placedTimeout: 800,
   plugins: [],
   sensors: [],
-  classes: {
-    'container:dragging': 'draggable-container--is-dragging',
-    'source:dragging': 'draggable-source--is-dragging',
-    'source:placed': 'draggable-source--placed',
-    'container:placed': 'draggable-container--placed',
-    'body:dragging': 'draggable--is-dragging',
-    'draggable:over': 'draggable--over',
-    'container:over': 'draggable-container--over',
-    mirror: 'draggable-mirror',
-  },
 };
 
 /**
@@ -117,7 +118,7 @@ export default class Draggable {
     document.addEventListener('drag:stop', this[onDragStop], true);
     document.addEventListener('drag:pressure', this[onDragPressure], true);
 
-    this.addPlugin(...[Mirror, Accessibility, ...this.options.plugins]);
+    this.addPlugin(...[Mirror, Accessibility, Announcement, ...this.options.plugins]);
     this.addSensor(...[MouseSensor, TouchSensor, ...this.options.sensors]);
 
     const draggableInitializedEvent = new DraggableInitializedEvent({
@@ -279,7 +280,7 @@ export default class Draggable {
    * @return {String|null}
    */
   getClassNameFor(name) {
-    return this.options.classes[name] || defaults.classes[name];
+    return (this.options.classes && this.options.classes[name]) || defaultClasses[name];
   }
 
   /**
