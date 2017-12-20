@@ -1,5 +1,7 @@
 export {
   DragStartEvent,
+  DragNextEvent,
+  DragPreviousEvent,
   DragMoveEvent,
   DragOutContainerEvent,
   DragOutEvent,

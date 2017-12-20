@@ -5,6 +5,7 @@ import {Focusable, Mirror, Announcement} from './Plugins';
 import {
   MouseSensor,
   TouchSensor,
+  KeyboardSensor,
 } from './Sensors';
 
 import {
@@ -14,6 +15,8 @@ import {
 
 import {
   DragStartEvent,
+  DragNextEvent,
+  DragPreviousEvent,
   DragMoveEvent,
   DragOutContainerEvent,
   DragOutEvent,
@@ -35,6 +38,11 @@ const onDragMove = Symbol('onDragMove');
 const onDragStop = Symbol('onDragStop');
 const onDragPressure = Symbol('onDragPressure');
 const getAppendableContainer = Symbol('getAppendableContainer');
+
+const onKeyboardDragStart = Symbol('onKeyboardDragStart');
+const onKeyboardDragNext = Symbol('onKeyboardDragNext');
+const onKeyboardDragPrevious = Symbol('onKeyboardDragPrevious');
+const onKeyboardDragStop = Symbol('onKeyboardDragStop');
 
 const defaultClasses = {
   'container:dragging': 'draggable-container--is-dragging',
@@ -108,18 +116,35 @@ export default class Draggable {
      */
     this.sensors = [];
 
+    /**
+     * Draggable elements by container
+     * @property draggableElements
+     * @type {HTMLElement[]}
+     */
+    this.draggableElements = [];
+
     this[onDragStart] = this[onDragStart].bind(this);
     this[onDragMove] = this[onDragMove].bind(this);
     this[onDragStop] = this[onDragStop].bind(this);
     this[onDragPressure] = this[onDragPressure].bind(this);
 
-    document.addEventListener('drag:start', this[onDragStart], true);
-    document.addEventListener('drag:move', this[onDragMove], true);
-    document.addEventListener('drag:stop', this[onDragStop], true);
-    document.addEventListener('drag:pressure', this[onDragPressure], true);
+    this[onKeyboardDragStart] = this[onKeyboardDragStart].bind(this);
+    this[onKeyboardDragNext] = this[onKeyboardDragNext].bind(this);
+    this[onKeyboardDragPrevious] = this[onKeyboardDragPrevious].bind(this);
+    this[onKeyboardDragStop] = this[onKeyboardDragStop].bind(this);
+
+    document.addEventListener('drag:pointer:start', this[onDragStart], true);
+    document.addEventListener('drag:pointer:move', this[onDragMove], true);
+    document.addEventListener('drag:pointer:stop', this[onDragStop], true);
+    document.addEventListener('drag:pointer:pressure', this[onDragPressure], true);
+
+    document.addEventListener('drag:keyboard:start', this[onKeyboardDragStart], true);
+    document.addEventListener('drag:keyboard:next', this[onKeyboardDragNext], true);
+    document.addEventListener('drag:keyboard:previous', this[onKeyboardDragPrevious], true);
+    document.addEventListener('drag:keyboard:stop', this[onKeyboardDragStop], true);
 
     this.addPlugin(...[Mirror, Focusable, Announcement, ...this.options.plugins]);
-    this.addSensor(...[MouseSensor, TouchSensor, ...this.options.sensors]);
+    this.addSensor(...[MouseSensor, TouchSensor, KeyboardSensor, ...this.options.sensors]);
 
     const draggableInitializedEvent = new DraggableInitializedEvent({
       draggable: this,
@@ -133,10 +158,15 @@ export default class Draggable {
    * deactivates sensors and plugins
    */
   destroy() {
-    document.removeEventListener('drag:start', this.dragStart, true);
-    document.removeEventListener('drag:move', this.dragMove, true);
-    document.removeEventListener('drag:stop', this.dragStop, true);
-    document.removeEventListener('drag:pressure', this.dragPressure, true);
+    document.removeEventListener('drag:pointer:start', this.dragStart, true);
+    document.removeEventListener('drag:pointer:move', this.dragMove, true);
+    document.removeEventListener('drag:pointer:stop', this.dragStop, true);
+    document.removeEventListener('drag:pointer:pressure', this.dragPressure, true);
+
+    document.removeEventListener('drag:keyboard:start', this[onKeyboardDragStart], true);
+    document.removeEventListener('drag:keyboard:next', this[onKeyboardDragNext], true);
+    document.removeEventListener('drag:keyboard:previous', this[onKeyboardDragPrevious], true);
+    document.removeEventListener('drag:keyboard:stop', this[onKeyboardDragStop], true);
 
     const draggableDestroyEvent = new DraggableDestroyEvent({
       draggable: this,
@@ -222,6 +252,16 @@ export default class Draggable {
   removeContainer(...containers) {
     this.containers = this.containers.filter((container) => !containers.includes(container));
     return this;
+  }
+
+  /**
+   * Returns draggable elements
+   * @return {HTMLElement[]}
+   */
+  getDraggableElements() {
+    return this.containers.reduce((draggables, container) => {
+      return [...draggables, ...container.querySelectorAll(this.options.draggable)];
+    }, []);
   }
 
   /**
@@ -318,11 +358,15 @@ export default class Draggable {
       return;
     }
 
+    requestAnimationFrame(() => {
+      this.draggableElements = this.getDraggableElements();
+    });
+
     this.dragging = true;
 
     this.source = this.originalSource.cloneNode(true);
 
-    if (!isDragEvent(originalEvent)) {
+    if (!isDragEvent(originalEvent) && !isKeyboardEvent(originalEvent)) {
       const appendableContainer = this[getAppendableContainer]({source: this.originalSource});
       this.mirror = this.source.cloneNode(true);
 
@@ -606,6 +650,96 @@ export default class Draggable {
     this.trigger(dragPressureEvent);
   }
 
+  [onKeyboardDragStart](event) {
+    const sensorEvent = getSensorEvent(event);
+
+    this.source = sensorEvent.target;
+    this.originalSource = sensorEvent.target;
+    this.sourceContainer = sensorEvent.container;
+
+    this.draggableElements = this.getDraggableElements();
+
+    const dragEvent = new DragStartEvent({
+      source: this.source,
+      mirror: this.mirror,
+      originalSource: this.originalSource,
+      sourceContainer: this.sourceContainer,
+      sensorEvent,
+    });
+
+    this.trigger(dragEvent);
+    this.dragging = !dragEvent.canceled();
+
+    if (!dragEvent.canceled()) {
+      return;
+    }
+
+    // reset
+    this.source = null;
+    this.originalSource = null;
+    this.sourceContainer = null;
+    this.dragging = false;
+  }
+
+  [onKeyboardDragNext](event) {
+    if (!this.dragging) {
+      return;
+    }
+
+    const sensorEvent = getSensorEvent(event);
+
+    const dragEvent = new DragNextEvent({
+      source: this.source,
+      mirror: this.mirror,
+      originalSource: this.originalSource,
+      sourceContainer: this.sourceContainer,
+      sensorEvent,
+    });
+
+    this.trigger(dragEvent);
+  }
+
+  [onKeyboardDragPrevious](event) {
+    if (!this.dragging) {
+      return;
+    }
+
+    const sensorEvent = getSensorEvent(event);
+
+    const dragEvent = new DragPreviousEvent({
+      source: this.source,
+      mirror: this.mirror,
+      originalSource: this.originalSource,
+      sourceContainer: this.sourceContainer,
+      sensorEvent,
+    });
+
+    this.trigger(dragEvent);
+  }
+
+  [onKeyboardDragStop](event) {
+    if (!this.dragging) {
+      return;
+    }
+
+    const sensorEvent = getSensorEvent(event);
+
+    const dragEvent = new DragStopEvent({
+      source: this.source,
+      mirror: this.mirror,
+      originalSource: this.originalSource,
+      sourceContainer: this.sourceContainer,
+      sensorEvent,
+    });
+
+    this.trigger(dragEvent);
+
+    this.source = null;
+    this.originalSource = null;
+    this.sourceContainer = null;
+    this.dragging = false;
+  }
+
   /**
    * Returns appendable container for mirror based on the appendTo option
    * @private
@@ -634,6 +768,10 @@ function getSensorEvent(event) {
 
 function isDragEvent(event) {
   return /^drag/.test(event.type);
+}
+
+function isKeyboardEvent(event) {
+  return /^key/.test(event.type);
 }
 
 function applyUserSelect(element, value) {

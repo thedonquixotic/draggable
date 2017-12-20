@@ -11,6 +11,7 @@ const onDragStart = Symbol('onDragStart');
 const onDragOverContainer = Symbol('onDragOverContainer');
 const onDragOver = Symbol('onDragOver');
 const onDragStop = Symbol('onDragStop');
+const onDragNext = Symbol('onDragNext');
 
 /**
  * Sortable is built on top of Draggable and allows sorting of draggable elements. Sortable will keep
@@ -50,10 +51,13 @@ export default class Sortable extends Draggable {
     this[onDragOver] = this[onDragOver].bind(this);
     this[onDragStop] = this[onDragStop].bind(this);
 
+    this[onDragNext] = this[onDragNext].bind(this);
+
     this
       .on('drag:start', this[onDragStart])
       .on('drag:over:container', this[onDragOverContainer])
       .on('drag:over', this[onDragOver])
+      .on('drag:next', this[onDragNext])
       .on('drag:stop', this[onDragStop]);
   }
 
@@ -79,6 +83,21 @@ export default class Sortable extends Draggable {
     return [...element.parentNode.children].filter((childElement) => {
       return childElement !== this.originalSource && childElement !== this.mirror;
     }).indexOf(element);
+  }
+
+  nextDraggable() {
+    const currentIndex = this.draggableElements.indexOf(this.source);
+    if (currentIndex === -1) {
+      return null;
+    } else if (currentIndex === this.draggableElements.length - 1) {
+      return this.draggableElements[0]
+    } else {
+      return this.draggableElements[currentIndex + 1]
+    }
+  }
+
+  previousDraggable() {
+
   }
 
   /**
@@ -213,6 +232,11 @@ export default class Sortable extends Draggable {
 
     this.startIndex = null;
     this.startContainer = null;
+  }
+
+  [onDragNext](event) {
+    move(this.source, this.nextDraggable(), this.nextDraggable().parentNode);
+    this.draggableElements = this.getDraggableElements();
   }
 }
 

@@ -1,7 +1,13 @@
 export {
   SensorEvent,
-  DragStartSensorEvent,
-  DragMoveSensorEvent,
-  DragStopSensorEvent,
-  DragPressureSensorEvent,
+  KeyboardSensorEvent,
+  DragKeyboardStartSensorEvent,
+  DragKeyboardNextSensorEvent,
+  DragKeyboardPreviousSensorEvent,
+  DragKeyboardStopSensorEvent,
+  PointerSensorEvent,
+  DragPointerStartSensorEvent,
+  DragPointerMoveSensorEvent,
+  DragPointerStopSensorEvent,
+  DragPointerPressureSensorEvent,
 } from './SensorEvent';
