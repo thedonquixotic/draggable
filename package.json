@@ -51,10 +51,10 @@
     "esdoc-standard-plugin": "^1.0.0",
     "esdoc": "^1.0.4",
     "eslint": "^4.16.0",
-    "eslint-loader": "^1.9.0",
+    "eslint-loader": "^2.0.0",
     "eslint-plugin-shopify": "^19.0.0",
-    "jest": "^21.2.1",
-    "webpack": "^3.10.0"
+    "jest": "^22.4.2",
+    "webpack": "^4.0.1"
   },
   "eslintConfig": {
     "extends": "plugin:shopify/esnext",
