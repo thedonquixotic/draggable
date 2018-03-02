@@ -25,6 +25,8 @@ interface, for more information read the documentation below.
 
 ## Table of Contents
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/Shopify/draggable.svg)](https://greenkeeper.io/)
+
 * [Install](#install)
 * [Documentation](#documentation)
 * [Contributing](#contributing)
