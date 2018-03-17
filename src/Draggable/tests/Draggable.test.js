@@ -452,7 +452,7 @@ describe('Draggable', () => {
     const callback = jest.fn();
     newInstance.on('drag:move', callback);
 
-    triggerEvent(document, 'mousemove', {
+    triggerEvent(document.body, 'mousemove', {
       clientX: expectedClientX,
       clientY: expectedClientY,
     });
