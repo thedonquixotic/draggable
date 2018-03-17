@@ -6,30 +6,30 @@ import {
 
 import Draggable, {
   defaultOptions,
-} from './../Draggable';
+} from '../Draggable';
 
 import {
   DragStartEvent,
   DragMoveEvent,
   DragStopEvent,
-} from './../DragEvent';
+} from '../DragEvent';
 
 import {
   DraggableInitializedEvent,
   DraggableDestroyEvent,
-} from './../DraggableEvent';
+} from '../DraggableEvent';
 
 import {
   Accessibility,
   Mirror,
   Scrollable,
   Announcement,
-} from './../Plugins';
+} from '../Plugins';
 
 import {
   MouseSensor,
   TouchSensor,
-} from './../Sensors';
+} from '../Sensors';
 
 const sampleMarkup = `
   <ul>
